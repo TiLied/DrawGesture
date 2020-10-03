@@ -1,0 +1,40 @@
+﻿<Window x:Class="DrawGesture.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DrawGesture"
+        mc:Ignorable="d"
+        Title="Draw Gesture" Height="800" Width="500" Visibility="Visible" WindowStyle="SingleBorderWindow" Background="#FFE6E6E6">
+    <Grid>
+        <StackPanel Name="panel" Margin="10" VerticalAlignment="Bottom">
+            <Label Name="lblFolder" MinWidth="100" MinHeight="20" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Bottom"/>
+            <Button Name="btnFolder" Background="Pink" 
+        BorderBrush="Black" BorderThickness="1" 
+        Click="OnClickBtnFolder" VerticalAlignment="Bottom" HorizontalAlignment="Right" MinWidth="100" MinHeight="20" Margin="0,0,10,10">
+                Choose folder
+            </Button>
+            <Label FontWeight="Bold">Mode?</Label>
+            <RadioButton Name="rTime">Time</RadioButton>
+            <TextBox PreviewTextInput="NumberValidationTextBox" Name="tBTime" Text="30"></TextBox>
+            <RadioButton Name="rClass">Class</RadioButton>
+            <ComboBox Name="comboBox1"
+            Text="Classes"
+            IsEditable="true"
+            IsReadOnly="true" Margin="0,0,0,10"/>
+
+            <Button Name="btnStart" Background="Pink" 
+        BorderBrush="Black" BorderThickness="1" 
+        Click="OnClickBtnStart" VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" Margin="0,0,10,10">
+                Start
+            </Button>
+            
+        </StackPanel>
+        
+        <TextBlock  Name="textBox1" VerticalAlignment="Top" Panel.ZIndex="5"/>
+        <TextBlock  Name="textBox2" VerticalAlignment="Bottom" Panel.ZIndex="5" HorizontalAlignment="Right" MinWidth="10" Margin="10,10,0,0"/>
+        
+        <Image Name="imageBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+    </Grid>
+
+</Window>
