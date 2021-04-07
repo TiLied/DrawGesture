@@ -5,13 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DrawGesture"
         mc:Ignorable="d"
-        Title="Draw Gesture" Height="800" Width="500" Visibility="Visible" WindowStyle="SingleBorderWindow" Background="#FFE6E6E6">
+        Title="Draw Gesture" Height="900" Width="600" Visibility="Visible" WindowStyle="SingleBorderWindow" Background="#FFE5E3E8"
+        FontSize="14">
     <Grid>
         <StackPanel Name="panel" Margin="10" VerticalAlignment="Bottom">
             <Label Name="lblFolder" MinWidth="100" MinHeight="20" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Bottom"/>
-            <Button Name="btnFolder" Background="Pink" 
-        BorderBrush="Black" BorderThickness="1" 
+            <Button Name="btnFolder" Background="#FFECC7E0" BorderThickness="1" 
         Click="OnClickBtnFolder" VerticalAlignment="Bottom" HorizontalAlignment="Right" MinWidth="100" MinHeight="20" Margin="0,0,10,10">
+                <Button.BorderBrush>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black"/>
+                        <GradientStop Color="#FFDE3030" Offset="1"/>
+                    </LinearGradientBrush>
+                </Button.BorderBrush>
                 Choose folder
             </Button>
             <Label FontWeight="Bold">Mode?</Label>
@@ -23,17 +29,23 @@
             IsEditable="true"
             IsReadOnly="true" Margin="0,0,0,10"/>
 
-            <Button Name="btnStart" Background="Pink" 
-        BorderBrush="Black" BorderThickness="1" 
+            <Button Name="btnStart" Background="#FFECC7E0" BorderThickness="1" 
         Click="OnClickBtnStart" VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" Margin="0,0,10,10">
+                <Button.BorderBrush>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black"/>
+                        <GradientStop Color="#FFE23131" Offset="1"/>
+                    </LinearGradientBrush>
+                </Button.BorderBrush>
                 Start
             </Button>
-            
+
         </StackPanel>
-        
+
         <TextBlock  Name="textBox1" VerticalAlignment="Top" Panel.ZIndex="5"/>
-        <TextBlock  Name="textBox2" VerticalAlignment="Bottom" Panel.ZIndex="5" HorizontalAlignment="Right" MinWidth="10" Margin="10,10,0,0"/>
-        
+        <TextBlock  Name="textBox2" VerticalAlignment="Bottom" Panel.ZIndex="5" HorizontalAlignment="Right" MinWidth="10" Margin="10,10,10,10" Background="#FFE5E3E8"/>
+        <TextBlock  Name="textBox3" VerticalAlignment="Bottom" Panel.ZIndex="5" HorizontalAlignment="Left" MinWidth="10" Margin="10,10,10,10" Height="16" Padding="0,0,0,0" Background="#FFE5E3E8"/>
+
         <Image Name="imageBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
     </Grid>
 

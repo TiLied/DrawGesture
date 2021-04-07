@@ -1,24 +1,14 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Diagnostics;
 using System.Timers;
 using System.Windows.Threading;
-using System.Threading;
 using System.Text.RegularExpressions;
 
 namespace DrawGesture
@@ -28,18 +18,22 @@ namespace DrawGesture
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		private readonly int oneMin = 60000;
+		//private readonly int tenMin = 60000 * 10;
+		//private readonly int halfHour = 60000 * 30;
+		private readonly int oneHour = 60000 * 60;
+
 		private System.Timers.Timer aTimer;
-		private System.Timers.Timer aTimer2;
 		private int[] times;
 		private int[] timesS;
 		private string[] files;
 		private String searchFolder;
 		private static int nEventsFired = 0;
-		private int oneMin = 60000;
-		//private int tenMin = 60000 * 10;
-		//private int halfHour = 60000 * 30;
-		private int oneHour = 60000 * 60;
 		private int count = 0;
+
+		private int countDown = 0;
+		private int x;
+		private bool isClass = false;
 
 		//private static readonly Regex _regex = new Regex("[^0-9.-]+"); //regex that matches disallowed text
 
@@ -68,7 +62,9 @@ namespace DrawGesture
 			{
 				searchFolder = open.FileName;
 				var filters = new String[] { "jpg", "jpeg", "png", "gif", "tiff", "bmp", "svg" };
-				files = GetFilesFrom(searchFolder, filters, false);
+				files = GetFilesFrom(searchFolder, filters, true);
+
+				searchFolder += " | Images: " + files.Length;
 
 				Debug.Write(String.Join("|", files));
 
@@ -82,18 +78,26 @@ namespace DrawGesture
 		{
 			if ((bool)rTime.IsChecked)
 			{
+				isClass = false;
+
 				imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new NextImage(ChangeImage));
 
-				int x = Int32.Parse(tBTime.Text);
-				SetTimer(x * 1000);
+				x = Int32.Parse(tBTime.Text);
+
+				countDown = x;
+
+				SetTimer(1000);
 
 				panel.Visibility = Visibility.Collapsed;
 			}
 
 			if ((bool)rClass.IsChecked)
 			{
+				isClass = true;
+
 				string selectedState = comboBox1.SelectedItem.ToString();
 				selectedState = selectedState.Substring(0, 1);
+
 				switch (selectedState) 
 				{
 					case "1":
@@ -101,13 +105,14 @@ namespace DrawGesture
 						
 						imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new NextImage(ChangeImage));
 
+						x = 30;
+						countDown = x;
+
 						times = new int[] { 10, 5, 2, 1, 0};
 						timesS = new int[] { oneMin / 2 , oneMin, oneMin * 5, oneMin * 10};
-						aTimer2 = new System.Timers.Timer(timesS[0]);
-						aTimer2.Elapsed += OnTimedEvent2;
-						aTimer2.AutoReset = true;
-						aTimer2.Enabled = true;
-						
+
+						SetTimer(1000);
+
 						panel.Visibility = Visibility.Collapsed;
 						break;
 					case "2":
@@ -115,12 +120,13 @@ namespace DrawGesture
 
 						imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new NextImage(ChangeImage));
 
-						times = new int[] { 10, 5, 2, 1, 1, 0};
-						timesS = new int[] { oneMin / 2, oneMin, oneMin * 5, oneMin * 10, oneHour/2};
-						aTimer2 = new System.Timers.Timer(timesS[0]);
-						aTimer2.Elapsed += OnTimedEvent2;
-						aTimer2.AutoReset = true;
-						aTimer2.Enabled = true;
+						x = 30;
+						countDown = x;
+
+						times = new int[] { 10, 5, 2, 1, 1, 0 };
+						timesS = new int[] { oneMin / 2, oneMin, oneMin * 5, oneMin * 10, oneHour / 2 };
+
+						SetTimer(1000);
 
 						panel.Visibility = Visibility.Collapsed;
 						break;
@@ -140,54 +146,71 @@ namespace DrawGesture
 
 		private void UpdateTimer()
 		{
-			aTimer2.Enabled = false;
 			times = times.Skip(1).ToArray();
 			timesS = timesS.Skip(1).ToArray();
-			aTimer2 = new System.Timers.Timer(timesS[0]);
-			aTimer2.Elapsed += OnTimedEvent2;
-			aTimer2.AutoReset = true;
-			aTimer2.Enabled = true;
+
+			countDown = timesS[0] / 1000;
+			x = timesS[0] / 1000;
+
 			nEventsFired = 0;
-		}
-
-		private void OnTimedEvent2(Object source, ElapsedEventArgs e)
-		{
-			if (times[0] == 0)
-			{
-				aTimer2.Enabled = false;
-				Debug.Write("DONE!");
-				return;
-			}
-
-			imageBox.Dispatcher.BeginInvoke(
-				DispatcherPriority.Normal,
-				new NextImage(ChangeImage));
-
-			nEventsFired++;
-
-			if (nEventsFired == 10 && times[0] == 10)
-			{
-				UpdateTimer();
-			}
-			if (nEventsFired == 5 && times[0] == 5)
-			{
-				UpdateTimer();
-			}
-			if (nEventsFired == 2 && times[0] == 2)
-			{
-				UpdateTimer();
-			}
-			if (nEventsFired == 1 && times[0] == 1)
-			{
-				UpdateTimer();
-			}
 		}
 
 		private void OnTimedEvent(Object source, ElapsedEventArgs e)
 		{
-			imageBox.Dispatcher.BeginInvoke(
+			countDown--;
+
+			textBox3.Dispatcher.BeginInvoke(
 				DispatcherPriority.Normal,
-				new NextImage(ChangeImage));
+				new Label(ChangeCountDown));
+
+			if (!isClass)
+			{
+				if (countDown == 0)
+				{
+					countDown = x;
+
+					imageBox.Dispatcher.BeginInvoke(
+						DispatcherPriority.Normal,
+						new NextImage(ChangeImage));
+				}
+			}
+			else 
+			{
+				if (times[0] == 0)
+				{
+					aTimer.Enabled = false;
+					Debug.Write("DONE!");
+					return;
+				}
+
+				if (countDown == 0)
+				{
+					countDown = x;
+
+					imageBox.Dispatcher.BeginInvoke(
+						DispatcherPriority.Normal,
+						new NextImage(ChangeImage));
+
+					nEventsFired++;
+
+					if (nEventsFired == 10 && times[0] == 10)
+					{
+						UpdateTimer();
+					}
+					if (nEventsFired == 5 && times[0] == 5)
+					{
+						UpdateTimer();
+					}
+					if (nEventsFired == 2 && times[0] == 2)
+					{
+						UpdateTimer();
+					}
+					if (nEventsFired == 1 && times[0] == 1)
+					{
+						UpdateTimer();
+					}
+				}
+			}
 		}
 
 		private void ChangeLabelFolder()
@@ -209,6 +232,12 @@ namespace DrawGesture
 			textBox2.Text = count.ToString();
 		}
 
+		private void ChangeCountDown() 
+		{
+			textBox3.Text = countDown.ToString();
+		}
+
+		//
 		//https://stackoverflow.com/a/12721673
 		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
 		{
@@ -216,6 +245,7 @@ namespace DrawGesture
 			e.Handled = regex.IsMatch(e.Text);
 		}
 
+		//
 		//https://stackoverflow.com/a/18321162
 		private static String[] GetFilesFrom(String searchFolder, String[] filters, bool isRecursive)
 		{
