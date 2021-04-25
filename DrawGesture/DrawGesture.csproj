@@ -6,10 +6,16 @@
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release;asd</Configurations>
     <Platforms>AnyCPU;x64</Platforms>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
+    <Version>1.2.0</Version>
+    <Description>Choose folder and draw gesture!</Description>
+    <Authors>TiLied</Authors>
+    <Company />
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+    <PackageReference Include="Microsoft-WindowsAPICodePack-Core" Version="1.1.4" />
   </ItemGroup>
 
 </Project>

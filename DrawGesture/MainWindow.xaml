@@ -5,48 +5,88 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DrawGesture"
         mc:Ignorable="d"
-        Title="Draw Gesture" Height="900" Width="600" Visibility="Visible" WindowStyle="SingleBorderWindow" Background="#FFE5E3E8"
-        FontSize="14">
+        Title="Draw Gesture" Height="900" Width="600" Visibility="Visible"
+        FontSize="14" Background="#FFE1DCE6">
     <Grid>
-        <StackPanel Name="panel" Margin="10" VerticalAlignment="Bottom">
-            <Label Name="lblFolder" MinWidth="100" MinHeight="20" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Bottom"/>
-            <Button Name="btnFolder" Background="#FFECC7E0" BorderThickness="1" 
-        Click="OnClickBtnFolder" VerticalAlignment="Bottom" HorizontalAlignment="Right" MinWidth="100" MinHeight="20" Margin="0,0,10,10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="2*" />
+            <RowDefinition MinHeight="200" />
+        </Grid.RowDefinitions>
+        <Grid x:Name="mainPanel" Margin="5,5,5,5" Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" MinHeight="100" MinWidth="250" d:IsHidden="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Label x:Name="lblFolder" MinWidth="100" MinHeight="20" Grid.ColumnSpan="3"/>
+            <Button x:Name="btnFolder" Background="#FFECC7E0" BorderThickness="1" 
+                Click="OnClickBtnFolder" MinWidth="100" MinHeight="20" Content="Choose folder" HorizontalContentAlignment="Center" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Stretch">
                 <Button.BorderBrush>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="Black"/>
                         <GradientStop Color="#FFDE3030" Offset="1"/>
                     </LinearGradientBrush>
                 </Button.BorderBrush>
-                Choose folder
             </Button>
-            <Label FontWeight="Bold">Mode?</Label>
-            <RadioButton Name="rTime">Time</RadioButton>
-            <TextBox PreviewTextInput="NumberValidationTextBox" Name="tBTime" Text="30"></TextBox>
-            <RadioButton Name="rClass">Class</RadioButton>
-            <ComboBox Name="comboBox1"
-            Text="Classes"
-            IsEditable="true"
-            IsReadOnly="true" Margin="0,0,0,10"/>
+            <Label FontWeight="Bold" Content="Mode?" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="1"/>
+            <RadioButton x:Name="rTime" Content="Time" Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+            <TextBox PreviewTextInput="NumberValidationTextBox" x:Name="tBTime" Text="30" Grid.ColumnSpan="2" Grid.Row="1" VerticalAlignment="Bottom" Padding="10,0,0,0"/>
+            <RadioButton x:Name="rClass" Content="Class" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2"/>
+            <ComboBox x:Name="comboBox1"
+                Text="Classes"
+                IsEditable="true"
+                IsReadOnly="true" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Grid.Column="2" Padding="10,0,0,0"/>
 
-            <Button Name="btnStart" Background="#FFECC7E0" BorderThickness="1" 
-        Click="OnClickBtnStart" VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" Margin="0,0,10,10">
+            <Button x:Name="btnStart" Background="#FFECC7E0" BorderThickness="1" 
+                Click="OnClickBtnStart" MinWidth="103" MinHeight="20" Content="Start" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2">
                 <Button.BorderBrush>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="Black"/>
                         <GradientStop Color="#FFE23131" Offset="1"/>
                     </LinearGradientBrush>
                 </Button.BorderBrush>
-                Start
             </Button>
 
-        </StackPanel>
+        </Grid>
+        <Grid x:Name="imagePanel" VerticalAlignment="Stretch" Margin="5,5,5,5" HorizontalAlignment="Stretch" Grid.RowSpan="3" Grid.ColumnSpan="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" MinHeight="15" />
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="Auto" MinHeight="15" />
+            </Grid.RowDefinitions>
+            <Image x:Name="imageBox" MinWidth="200" MinHeight="400" ScrollViewer.VerticalScrollBarVisibility="Disabled" FlowDirection="RightToLeft" Grid.Row="1" Grid.ColumnSpan="2"/>
 
-        <TextBlock  Name="textBox1" VerticalAlignment="Top" Panel.ZIndex="5"/>
-        <TextBlock  Name="textBox2" VerticalAlignment="Bottom" Panel.ZIndex="5" HorizontalAlignment="Right" MinWidth="10" Margin="10,10,10,10" Background="#FFE5E3E8"/>
-        <TextBlock  Name="textBox3" VerticalAlignment="Bottom" Panel.ZIndex="5" HorizontalAlignment="Left" MinWidth="10" Margin="10,10,10,10" Height="16" Padding="0,0,0,0" Background="#FFE5E3E8"/>
+            <TextBlock  x:Name="textFile" Panel.ZIndex="5" Grid.ColumnSpan="2" MinWidth="10" HorizontalAlignment="Left"/>
 
-        <Image Name="imageBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            <TextBlock  x:Name="textCountImage" Panel.ZIndex="5" MinWidth="10" Background="#FFE5E3E8" Grid.Row="2" HorizontalAlignment="Right" Grid.ColumnSpan="2"/>
+            <TextBlock  x:Name="textCount" Panel.ZIndex="5" MinWidth="10" Padding="0,0,0,0" Background="#FFE5E3E8" Grid.ColumnSpan="2" Grid.Row="2" HorizontalAlignment="Left"/>
+            <Button x:Name="btnSkip" Click="OnClickBtnSkip" Content="Skip" Grid.Row="2" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" Background="#FFECC7E0" HorizontalContentAlignment="Center">
+                <Button.BorderBrush>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black"/>
+                        <GradientStop Color="#FFDE3030" Offset="1"/>
+                    </LinearGradientBrush>
+                </Button.BorderBrush>
+            </Button>
+
+        </Grid>
+
     </Grid>
 
 </Window>

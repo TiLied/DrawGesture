@@ -5,7 +5,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Diagnostics;
 using System.Timers;
 using System.Windows.Threading;
@@ -13,6 +12,7 @@ using System.Text.RegularExpressions;
 
 namespace DrawGesture
 {
+
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
@@ -23,7 +23,7 @@ namespace DrawGesture
 		//private readonly int halfHour = 60000 * 30;
 		private readonly int oneHour = 60000 * 60;
 
-		private System.Timers.Timer aTimer;
+		private Timer aTimer;
 		private int[] times;
 		private int[] timesS;
 		private string[] files;
@@ -37,13 +37,15 @@ namespace DrawGesture
 
 		//private static readonly Regex _regex = new Regex("[^0-9.-]+"); //regex that matches disallowed text
 
-		//I don't know what i'm doing, plz help :'(
-		public delegate void NextImage();
-		public delegate void Label();
+		//Still dont know :(
+		private delegate void _Delegate();
 
 		public MainWindow()
 		{
 			InitializeComponent();
+
+			imagePanel.Visibility = Visibility.Collapsed;
+			
 			comboBox1.Items.Add("1.30min(30sx10|1mx5|5mx2|10mx1)");
 			comboBox1.Items.Add("2.60min(30sx10|1mx5|5mx2|10mx1|30mx1)");
 			//comboBox1.Items.Add("3.60min(30sx10|1mx5|5mx2|10mx1|30mx1)");
@@ -51,16 +53,34 @@ namespace DrawGesture
 			//comboBox1.Items.Add("5.60min(30sx10|1mx5|5mx2|10mx1|30mx1)");
 		}
 
+		void OnClickBtnSkip(object sender, RoutedEventArgs e)
+		{
+			countDown = x;
+
+			imageBox.Dispatcher.BeginInvoke(
+				DispatcherPriority.Normal,
+				new _Delegate(ChangeImage));
+
+			if (isClass)
+			{
+				nEventsFired++;
+
+				if (nEventsFired == times[0])
+				{
+					UpdateTimer();
+				}
+			}
+		}
+
 		void OnClickBtnFolder(object sender, RoutedEventArgs e)
 		{
-			CommonOpenFileDialog open = new CommonOpenFileDialog
-			{
-				IsFolderPicker = true
-			};
+			using var dialog = new System.Windows.Forms.FolderBrowserDialog();
 
-			if (open.ShowDialog() == CommonFileDialogResult.Ok)
+			System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+
+			if (result == System.Windows.Forms.DialogResult.OK)
 			{
-				searchFolder = open.FileName;
+				searchFolder = dialog.SelectedPath;
 				var filters = new String[] { "jpg", "jpeg", "png", "gif", "tiff", "bmp", "svg" };
 				files = GetFilesFrom(searchFolder, filters, true);
 
@@ -70,7 +90,7 @@ namespace DrawGesture
 
 				lblFolder.Dispatcher.BeginInvoke(
 			   DispatcherPriority.Normal,
-			   new Label(ChangeLabelFolder));
+			   new _Delegate(ChangeLabelFolder));
 			}
 		}
 
@@ -80,7 +100,7 @@ namespace DrawGesture
 			{
 				isClass = false;
 
-				imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new NextImage(ChangeImage));
+				imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
 
 				x = Int32.Parse(tBTime.Text);
 
@@ -88,7 +108,8 @@ namespace DrawGesture
 
 				SetTimer(1000);
 
-				panel.Visibility = Visibility.Collapsed;
+				mainPanel.Visibility = Visibility.Collapsed;
+				imagePanel.Visibility = Visibility.Visible;
 			}
 
 			if ((bool)rClass.IsChecked)
@@ -103,32 +124,34 @@ namespace DrawGesture
 					case "1":
 						Debug.Write(selectedState);
 						
-						imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new NextImage(ChangeImage));
+						imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
 
 						x = 30;
 						countDown = x;
 
 						times = new int[] { 10, 5, 2, 1, 0};
-						timesS = new int[] { oneMin / 2 , oneMin, oneMin * 5, oneMin * 10};
+						timesS = new int[] { oneMin / 2 , oneMin, oneMin * 5, oneMin * 10, 0};
 
 						SetTimer(1000);
 
-						panel.Visibility = Visibility.Collapsed;
+						mainPanel.Visibility = Visibility.Collapsed;
+						imagePanel.Visibility = Visibility.Visible;
 						break;
 					case "2":
 						Debug.Write(selectedState);
 
-						imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new NextImage(ChangeImage));
+						imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
 
 						x = 30;
 						countDown = x;
 
 						times = new int[] { 10, 5, 2, 1, 1, 0 };
-						timesS = new int[] { oneMin / 2, oneMin, oneMin * 5, oneMin * 10, oneHour / 2 };
+						timesS = new int[] { oneMin / 2, oneMin, oneMin * 5, oneMin * 10, oneHour / 2, 0};
 
 						SetTimer(1000);
 
-						panel.Visibility = Visibility.Collapsed;
+						mainPanel.Visibility = Visibility.Collapsed;
+						imagePanel.Visibility = Visibility.Visible;
 						break;
 					default:
 						break;
@@ -138,7 +161,7 @@ namespace DrawGesture
 
 		private void SetTimer(int time)
 		{
-			aTimer = new System.Timers.Timer(time);
+			aTimer = new Timer(time);
 			aTimer.Elapsed += OnTimedEvent;
 			aTimer.AutoReset = true;
 			aTimer.Enabled = true;
@@ -159,9 +182,9 @@ namespace DrawGesture
 		{
 			countDown--;
 
-			textBox3.Dispatcher.BeginInvoke(
+			textCount.Dispatcher.BeginInvoke(
 				DispatcherPriority.Normal,
-				new Label(ChangeCountDown));
+				new _Delegate(ChangeCountDown));
 
 			if (!isClass)
 			{
@@ -171,7 +194,7 @@ namespace DrawGesture
 
 					imageBox.Dispatcher.BeginInvoke(
 						DispatcherPriority.Normal,
-						new NextImage(ChangeImage));
+						new _Delegate(ChangeImage));
 				}
 			}
 			else 
@@ -179,7 +202,13 @@ namespace DrawGesture
 				if (times[0] == 0)
 				{
 					aTimer.Enabled = false;
+
 					Debug.Write("DONE!");
+
+					imagePanel.Dispatcher.BeginInvoke(
+	DispatcherPriority.Normal,
+	new _Delegate(StartOver));
+
 					return;
 				}
 
@@ -189,28 +218,24 @@ namespace DrawGesture
 
 					imageBox.Dispatcher.BeginInvoke(
 						DispatcherPriority.Normal,
-						new NextImage(ChangeImage));
+						new _Delegate(ChangeImage));
 
 					nEventsFired++;
 
-					if (nEventsFired == 10 && times[0] == 10)
-					{
-						UpdateTimer();
-					}
-					if (nEventsFired == 5 && times[0] == 5)
-					{
-						UpdateTimer();
-					}
-					if (nEventsFired == 2 && times[0] == 2)
-					{
-						UpdateTimer();
-					}
-					if (nEventsFired == 1 && times[0] == 1)
+					if (nEventsFired == times[0])
 					{
 						UpdateTimer();
 					}
 				}
 			}
+		}
+
+		private void StartOver() 
+		{
+			imagePanel.Visibility = Visibility.Collapsed;
+			mainPanel.Visibility = Visibility.Visible;
+			nEventsFired = 0;
+			count = 0;
 		}
 
 		private void ChangeLabelFolder()
@@ -227,14 +252,15 @@ namespace DrawGesture
 			bitmap.UriSource = new Uri(files[start2]);
 			bitmap.EndInit();
 			imageBox.Source = bitmap;
-			textBox1.Text = files[start2];
+			textFile.Text = files[start2];
 			count++;
-			textBox2.Text = count.ToString();
+			textCountImage.Text = count.ToString();
 		}
 
 		private void ChangeCountDown() 
 		{
-			textBox3.Text = countDown.ToString();
+			TimeSpan _time = TimeSpan.FromSeconds(countDown);
+			textCount.Text = _time.ToString(@"hh\:mm\:ss");
 		}
 
 		//
