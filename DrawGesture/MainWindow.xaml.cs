@@ -12,30 +12,59 @@ using System.Text.RegularExpressions;
 
 namespace DrawGesture
 {
-
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private readonly int oneMin = 60000;
-		//private readonly int tenMin = 60000 * 10;
-		//private readonly int halfHour = 60000 * 30;
-		private readonly int oneHour = 60000 * 60;
+		private class ClassObj
+		{
+			public int ClassId { get; set; }
+			public int[,] ClassTimes { get; set; }
+
+			public string ClassTextBox { get; set; }
+
+			public override string ToString()
+			{
+				return "ClassId: " + ClassId + "   ClassTimes: " + ClassTimes + "   ClassTextBox: " + ClassTextBox;
+			}
+		}
+
+		// Create a list of classes.
+		private readonly List<ClassObj> _classes = new List<ClassObj>
+		{
+			new ClassObj
+			{
+				ClassId=0,
+				ClassTextBox="1.30min(30sx10|1mx5|5mx2|10mx1)",
+				ClassTimes= new int[,] { { 10, 5, 2, 1, 0},{ 60000 / 2, 60000, 60000 * 5, 60000 * 10, 0 } }
+			},
+			new ClassObj
+			{
+				ClassId=1,
+				//5m break before last TODO
+				ClassTextBox="2.60min(30sx10|1mx5|5mx2|10mx1|30mx1)",
+				ClassTimes=new int[,]{ { 10, 5, 2, 1, 1, 0},{ 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 60 / 2, 0 } }
+			},
+			new ClassObj
+			{
+				ClassId=2,
+				//14m break before last TODO
+				ClassTextBox="3.2hours(30sx6|1mx3|5mx2|10mx2|20mx1|1.04hx1)",
+				ClassTimes=new int[,]{ { 6, 3, 2, 3, 1, 1, 0},{ 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 20, 60000 * 60 + (60000 * 4), 0 } }
+			}
+		};
 
 		private Timer aTimer;
-		private int[] times;
-		private int[] timesS;
+		private int[,] times;
 		private string[] files;
-		private String searchFolder;
-		private static int nEventsFired = 0;
+
+		private string searchFolder = "";
+		private int nEventsFired = 0;
 		private int count = 0;
-
 		private int countDown = 0;
-		private int x;
+		private int intervalNumber = 0;
 		private bool isClass = false;
-
-		//private static readonly Regex _regex = new Regex("[^0-9.-]+"); //regex that matches disallowed text
 
 		//Still dont know :(
 		private delegate void _Delegate();
@@ -43,21 +72,44 @@ namespace DrawGesture
 		public MainWindow()
 		{
 			InitializeComponent();
-
-			imagePanel.Visibility = Visibility.Collapsed;
 			
-			comboBox1.Items.Add("1.30min(30sx10|1mx5|5mx2|10mx1)");
-			comboBox1.Items.Add("2.60min(30sx10|1mx5|5mx2|10mx1|30mx1)");
-			//comboBox1.Items.Add("3.60min(30sx10|1mx5|5mx2|10mx1|30mx1)");
-			//comboBox1.Items.Add("4.60min(30sx10|1mx5|5mx2|10mx1|30mx1)");
-			//comboBox1.Items.Add("5.60min(30sx10|1mx5|5mx2|10mx1|30mx1)");
+			//Disabal panels
+			imagePanel.Visibility = Visibility.Collapsed;
+
+			foreach (ClassObj aClass in _classes)
+			{
+				Debug.WriteLine(aClass.ToString());
+
+				//add Textboxes to ui
+				comboBox1.Items.Add(aClass.ClassTextBox);
+
+				foreach (int i in aClass.ClassTimes)
+				{
+					Debug.WriteLine("{0} ", i);
+				}
+			}
+		}
+
+		void OnClickBtnPause(object sender, RoutedEventArgs e)
+		{
+			//pause
+			if ((bool)aTimer.Enabled)
+			{
+				aTimer.Enabled = false;
+			}
+			else
+			{
+				aTimer.Enabled = true;
+			}
 		}
 
 		void OnClickBtnSkip(object sender, RoutedEventArgs e)
 		{
-			countDown = x;
+			//skip
+			countDown = intervalNumber;
 
-			imageBox.Dispatcher.BeginInvoke(
+			//change image
+			mainWindow.Dispatcher.BeginInvoke(
 				DispatcherPriority.Normal,
 				new _Delegate(ChangeImage));
 
@@ -65,7 +117,7 @@ namespace DrawGesture
 			{
 				nEventsFired++;
 
-				if (nEventsFired == times[0])
+				if (nEventsFired == times[0,0])
 				{
 					UpdateTimer();
 				}
@@ -82,13 +134,13 @@ namespace DrawGesture
 			{
 				searchFolder = dialog.SelectedPath;
 				var filters = new String[] { "jpg", "jpeg", "png", "gif", "tiff", "bmp", "svg" };
+				
+				//get files
 				files = GetFilesFrom(searchFolder, filters, true);
 
 				searchFolder += " | Images: " + files.Length;
 
-				Debug.Write(String.Join("|", files));
-
-				lblFolder.Dispatcher.BeginInvoke(
+				mainWindow.Dispatcher.BeginInvoke(
 			   DispatcherPriority.Normal,
 			   new _Delegate(ChangeLabelFolder));
 			}
@@ -96,66 +148,60 @@ namespace DrawGesture
 
 		void OnClickBtnStart(object sender, RoutedEventArgs e)
 		{
-			if ((bool)rTime.IsChecked)
-			{
-				isClass = false;
-
-				imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
-
-				x = Int32.Parse(tBTime.Text);
-
-				countDown = x;
-
-				SetTimer(1000);
-
-				mainPanel.Visibility = Visibility.Collapsed;
-				imagePanel.Visibility = Visibility.Visible;
-			}
-
 			if ((bool)rClass.IsChecked)
 			{
+				//set is Class mode
 				isClass = true;
 
-				string selectedState = comboBox1.SelectedItem.ToString();
-				selectedState = selectedState.Substring(0, 1);
+				//toggle panels
+				mainPanel.Visibility = Visibility.Collapsed;
+				imagePanel.Visibility = Visibility.Visible;
 
-				switch (selectedState) 
+				string _selectedState = comboBox1.SelectedItem.ToString();
+
+				foreach (ClassObj aClass in _classes)
 				{
-					case "1":
-						Debug.Write(selectedState);
-						
-						imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
+					if (_selectedState == aClass.ClassTextBox) 
+					{
+						Debug.WriteLine(_selectedState);
 
-						x = 30;
-						countDown = x;
+						//change image
+						mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
 
-						times = new int[] { 10, 5, 2, 1, 0};
-						timesS = new int[] { oneMin / 2 , oneMin, oneMin * 5, oneMin * 10, 0};
+						//clone 
+						times = (int[,])aClass.ClassTimes.Clone();
 
+						//set countdown
+						countDown = times[1,0] / 1000;
+
+						//set intervalNumber
+						intervalNumber = countDown;
+
+						//set timer
 						SetTimer(1000);
-
-						mainPanel.Visibility = Visibility.Collapsed;
-						imagePanel.Visibility = Visibility.Visible;
-						break;
-					case "2":
-						Debug.Write(selectedState);
-
-						imageBox.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
-
-						x = 30;
-						countDown = x;
-
-						times = new int[] { 10, 5, 2, 1, 1, 0 };
-						timesS = new int[] { oneMin / 2, oneMin, oneMin * 5, oneMin * 10, oneHour / 2, 0};
-
-						SetTimer(1000);
-
-						mainPanel.Visibility = Visibility.Collapsed;
-						imagePanel.Visibility = Visibility.Visible;
-						break;
-					default:
-						break;
+					}
 				}
+			}
+			else 
+			{
+				//set is Class mode
+				isClass = false;
+
+				//toggle panels
+				mainPanel.Visibility = Visibility.Collapsed;
+				imagePanel.Visibility = Visibility.Visible;
+
+				//change image
+				mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
+
+				//set countdown
+				countDown = Int32.Parse(tBTime.Text);
+
+				//set intervalNumber
+				intervalNumber = countDown;
+
+				//set timer
+				SetTimer(1000);
 			}
 		}
 
@@ -169,60 +215,71 @@ namespace DrawGesture
 
 		private void UpdateTimer()
 		{
-			times = times.Skip(1).ToArray();
-			timesS = timesS.Skip(1).ToArray();
+			int[] _indices = new int[] { 0 };
 
-			countDown = timesS[0] / 1000;
-			x = timesS[0] / 1000;
+			times = ResizeArray<int>(times, _indices);
+
+			countDown = times[1,0] / 1000;
+			intervalNumber = times[1, 0] / 1000;
 
 			nEventsFired = 0;
 		}
 
 		private void OnTimedEvent(Object source, ElapsedEventArgs e)
 		{
+			//update countDown
 			countDown--;
 
-			textCount.Dispatcher.BeginInvoke(
+			//update ui countDown
+			mainWindow.Dispatcher.BeginInvoke(
 				DispatcherPriority.Normal,
 				new _Delegate(ChangeCountDown));
 
 			if (!isClass)
 			{
+				//check if countDown is 0, yes change image
 				if (countDown == 0)
 				{
-					countDown = x;
+					//reset countDown
+					countDown = intervalNumber;
 
-					imageBox.Dispatcher.BeginInvoke(
+					//change image
+					mainWindow.Dispatcher.BeginInvoke(
 						DispatcherPriority.Normal,
 						new _Delegate(ChangeImage));
 				}
+
 			}
 			else 
 			{
-				if (times[0] == 0)
+				if (times[0,0] == 0)
 				{
+					//stop timer
 					aTimer.Enabled = false;
+					aTimer.Stop();
 
 					Debug.Write("DONE!");
 
-					imagePanel.Dispatcher.BeginInvoke(
-	DispatcherPriority.Normal,
-	new _Delegate(StartOver));
+					//start all over again
+					mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal,new _Delegate(StartOver));
 
 					return;
 				}
 
+				//check if countDown is 0, yes change image
 				if (countDown == 0)
 				{
-					countDown = x;
-
-					imageBox.Dispatcher.BeginInvoke(
+					//reset countDown
+					countDown = intervalNumber;
+					
+					//change image
+					mainWindow.Dispatcher.BeginInvoke(
 						DispatcherPriority.Normal,
 						new _Delegate(ChangeImage));
 
 					nEventsFired++;
 
-					if (nEventsFired == times[0])
+					if (nEventsFired == times[0,0])
 					{
 						UpdateTimer();
 					}
@@ -230,10 +287,13 @@ namespace DrawGesture
 			}
 		}
 
-		private void StartOver() 
+		private void StartOver()
 		{
+			//show panels
 			imagePanel.Visibility = Visibility.Collapsed;
 			mainPanel.Visibility = Visibility.Visible;
+
+			//reset count and nEventsFired
 			nEventsFired = 0;
 			count = 0;
 		}
@@ -245,21 +305,34 @@ namespace DrawGesture
 
 		private void ChangeImage()
 		{
-			Random random = new Random();
-			int start2 = random.Next(0, files.Length);
+			Random _random = new Random();
+			
+			//get random image(int) from list of files
+			int _url = _random.Next(0, files.Length);
+			
 			BitmapImage bitmap = new BitmapImage();
 			bitmap.BeginInit();
-			bitmap.UriSource = new Uri(files[start2]);
+			bitmap.UriSource = new Uri(files[_url]);
 			bitmap.EndInit();
+			
+			//draw image 
 			imageBox.Source = bitmap;
-			textFile.Text = files[start2];
+			
+			//set ui textFile to file path
+			textFile.Text = files[_url];
+
+			//count images
 			count++;
+
+			//set ui textCountImage
 			textCountImage.Text = count.ToString();
 		}
 
-		private void ChangeCountDown() 
+		private void ChangeCountDown()
 		{
 			TimeSpan _time = TimeSpan.FromSeconds(countDown);
+
+			//set textCount to hh\:mm\:ss time
 			textCount.Text = _time.ToString(@"hh\:mm\:ss");
 		}
 
@@ -284,5 +357,26 @@ namespace DrawGesture
 			return filesFound.ToArray();
 		}
 
+		//Delete col in multiArray
+		//https://social.msdn.microsoft.com/Forums/vstudio/en-US/137cbf2d-fbc3-45e0-a6ba-cd9bdc90b304/deleting-columns-from-multidimensional-array
+		private T[,] ResizeArray<T>(T[,] original, int[] columnsToRemove)
+		{
+			var newArray = new T[original.GetLength(0), original.GetLength(1) - columnsToRemove.Length];
+			int minRows = original.GetLength(0);
+			//int minCols = Math.Min(columnsToRemove.Length, original.GetLength(1));
+			for (int i = 0; i < minRows; i++)
+			{
+				int currentColumn = 0;
+				for (int j = 0; j < original.GetLength(1); j++)
+				{
+					if (columnsToRemove.Contains(j) == false)
+					{
+						newArray[i, currentColumn] = original[i, j];
+						currentColumn++;
+					}
+				}
+			}
+			return newArray;
+		}
 	}
 }
