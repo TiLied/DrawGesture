@@ -16,9 +16,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="2*" />
             <RowDefinition Height="2*" />
-            <RowDefinition MinHeight="200" />
+            <RowDefinition MinHeight="300" />
         </Grid.RowDefinitions>
-        <Grid x:Name="mainPanel" Margin="5,5,5,5" Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" MinHeight="100" MinWidth="250">
+        <Grid x:Name="mainPanel" Margin="5,5,5,5" Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" MinHeight="100" MinWidth="250" Visibility="Visible">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -29,8 +29,9 @@
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
-            <Label x:Name="lblFolder" MinWidth="100" MinHeight="20" Grid.ColumnSpan="3"/>
+            <Label x:Name="lblFolder" Content="{Binding Path=TextLblFolder}" MinWidth="100" MinHeight="20" Grid.ColumnSpan="3"/>
             <Button x:Name="btnFolder" Background="#FFECC7E0" BorderThickness="1" 
                 Click="OnClickBtnFolder" MinWidth="100" MinHeight="20" Content="Choose folder" HorizontalContentAlignment="Center" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Stretch">
                 <Button.BorderBrush>
@@ -41,16 +42,25 @@
                 </Button.BorderBrush>
             </Button>
             <Label FontWeight="Bold" Content="Mode?" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="1"/>
-            <RadioButton x:Name="rTime" Content="Time" Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
-            <TextBox PreviewTextInput="NumberValidationTextBox" x:Name="tBTime" Text="30" Grid.ColumnSpan="2" Grid.Row="1" VerticalAlignment="Bottom" Padding="10,0,0,0"/>
-            <RadioButton x:Name="rClass" Content="Class" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2"/>
+            <RadioButton x:Name="rTime" GroupName="Mode" IsChecked="{Binding Path=ModeClass[0]}" Content="Time" Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+            <TextBox PreviewTextInput="NumberValidationTextBox" x:Name="tBTime" Text="{Binding Path=Time}" Grid.ColumnSpan="2" Grid.Row="1" VerticalAlignment="Bottom" Padding="10,0,0,0"/>
+            <RadioButton x:Name="rClass" GroupName="Mode" IsChecked="{Binding Path=ModeClass[1]}"  Content="Class" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2"/>
             <ComboBox x:Name="comboBox1"
+                ItemsSource="{Binding Path=ClassesEntries}"
+                DisplayMemberPath="ClassTextBox"
+                SelectedValue="{Binding Path=ClassesEntry}"
                 Text="Classes"
                 IsEditable="true"
                 IsReadOnly="true" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Grid.Column="2" Padding="10,0,0,0"/>
 
+            <Label FontWeight="Bold" Content="Flip horizontal?" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="2"/>
+
+            <RadioButton x:Name="FVDefault" GroupName="FlipV" IsChecked="{Binding Path=FlipV[0], Mode=TwoWay}" Content="Default" Grid.Row="2" Grid.ColumnSpan="1" VerticalAlignment="Center"/>
+            <RadioButton x:Name="FVFlip" GroupName="FlipV" IsChecked="{Binding Path=FlipV[1], Mode=TwoWay}"  Content="Flip" Grid.Row="2" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="1"/>
+            <RadioButton x:Name="FVRandom" GroupName="FlipV" IsChecked="{Binding Path=FlipV[2], Mode=TwoWay}"  Content="Random" Grid.Row="2" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2"/>
+
             <Button x:Name="btnStart" Background="#FFECC7E0" BorderThickness="1" 
-                Click="OnClickBtnStart" MinWidth="103" MinHeight="20" Content="Start" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2">
+                Click="OnClickBtnStart" MinWidth="103" MinHeight="20" Content="Start" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2">
                 <Button.BorderBrush>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="Black"/>
@@ -60,7 +70,7 @@
             </Button>
 
         </Grid>
-        <Grid x:Name="imagePanel" VerticalAlignment="Stretch" Margin="5,5,5,5" HorizontalAlignment="Stretch" Grid.RowSpan="3" Grid.ColumnSpan="3">
+        <Grid x:Name="imagePanel" VerticalAlignment="Stretch" Margin="5,5,5,5" HorizontalAlignment="Stretch" Grid.RowSpan="3" Grid.ColumnSpan="3" Visibility="Collapsed">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -70,12 +80,21 @@
                 <RowDefinition Height="2*" />
                 <RowDefinition Height="Auto" MinHeight="15" />
             </Grid.RowDefinitions>
-            <Image x:Name="imageBox" MinWidth="200" MinHeight="400" ScrollViewer.VerticalScrollBarVisibility="Disabled" FlowDirection="RightToLeft" Grid.Row="1" Grid.ColumnSpan="2"/>
+            <Image x:Name="imageBox" Source="{Binding Path=ImageS}" MinWidth="200" MinHeight="400" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.Row="1" Grid.ColumnSpan="2" RenderTransformOrigin="0.5,0.5">
+                <Image.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform ScaleX="{Binding Path=ImageScaleX}"/>
+                        <SkewTransform/>
+                        <RotateTransform/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Image.RenderTransform>
+            </Image>
 
-            <TextBlock  x:Name="textFile" Panel.ZIndex="5" Grid.ColumnSpan="2" MinWidth="10" HorizontalAlignment="Left"/>
+            <TextBlock  x:Name="textFile" Text="{Binding Path=TextFile}" Panel.ZIndex="5" Grid.ColumnSpan="2" MinWidth="10" HorizontalAlignment="Left"/>
 
-            <TextBlock  x:Name="textCountImage" Panel.ZIndex="5" MinWidth="10" Background="#FFE5E3E8" Grid.Row="2" HorizontalAlignment="Right" Grid.ColumnSpan="2"/>
-            <TextBlock  x:Name="textCount" Panel.ZIndex="5" MinWidth="10" Padding="0,0,0,0" Background="#FFE5E3E8" Grid.ColumnSpan="2" Grid.Row="2" HorizontalAlignment="Left"/>
+            <TextBlock  x:Name="textCountImage" Text="{Binding Path=TextCountImage}" Panel.ZIndex="5" MinWidth="10" Background="#FFE5E3E8" Grid.Row="2" HorizontalAlignment="Right" Grid.ColumnSpan="2"/>
+            <TextBlock  x:Name="textCount" Text="{Binding Path=TextCount}" Panel.ZIndex="5" MinWidth="10" Padding="0,0,0,0" Background="#FFE5E3E8" Grid.ColumnSpan="2" Grid.Row="2" HorizontalAlignment="Left"/>
             <Button x:Name="btnSkip" Click="OnClickBtnSkip" Content="Skip" Grid.Row="2" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" Background="#FFECC7E0" HorizontalContentAlignment="Center">
                 <Button.BorderBrush>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -84,7 +103,38 @@
                     </LinearGradientBrush>
                 </Button.BorderBrush>
             </Button>
-            <Button x:Name="btnPause" Click="OnClickBtnPause" Content="Pause" Grid.Row="2" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" HorizontalContentAlignment="Center" Grid.Column="1" RenderTransformOrigin="0.5,0.5">
+            <Button x:Name="btnPause" Click="OnClickBtnPause" Content="{Binding Path=TextPause}" Grid.Row="2" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" HorizontalContentAlignment="Center" Grid.Column="1" RenderTransformOrigin="0.5,0.5">
+                <Button.Background>
+                    <SolidColorBrush Color="#FFECC7E0"/>
+                </Button.Background>
+                <Button.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform/>
+                        <TranslateTransform X="0"/>
+                    </TransformGroup>
+                </Button.RenderTransform>
+                <Button.BorderBrush>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black"/>
+                        <GradientStop Color="#FFDE3030" Offset="1"/>
+                    </LinearGradientBrush>
+                </Button.BorderBrush>
+            </Button>
+        </Grid>
+        <Grid x:Name="endPanel" VerticalAlignment="Stretch" Margin="5,5,5,5" HorizontalAlignment="Stretch" Grid.RowSpan="3" Grid.ColumnSpan="3" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" MinHeight="15" />
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="Auto" MinHeight="15" />
+            </Grid.RowDefinitions>
+            
+            <Button x:Name="btnBackToMain" Click="OnClickBtnBackToMain" Content="Back To Main Screen" Grid.Row="2" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" HorizontalContentAlignment="Center" Grid.Column="0" RenderTransformOrigin="0.5,0.5">
                 <Button.Background>
                     <SolidColorBrush Color="#FFECC7E0"/>
                 </Button.Background>

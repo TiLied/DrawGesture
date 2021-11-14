@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -10,6 +9,7 @@ using System.Timers;
 using System.Windows.Threading;
 using System.Text.RegularExpressions;
 
+
 namespace DrawGesture
 {
 	/// <summary>
@@ -17,88 +17,42 @@ namespace DrawGesture
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private class ClassObj
-		{
-			public int ClassId { get; set; }
-			public int[,] ClassTimes { get; set; }
-
-			public string ClassTextBox { get; set; }
-
-			public override string ToString()
-			{
-				return "ClassId: " + ClassId + "   ClassTimes: " + ClassTimes + "   ClassTextBox: " + ClassTextBox;
-			}
-		}
-
-		// Create a list of classes.
-		private readonly List<ClassObj> _classes = new List<ClassObj>
-		{
-			new ClassObj
-			{
-				ClassId=0,
-				ClassTextBox="1.30min(30sx10|1mx5|5mx2|10mx1)",
-				ClassTimes= new int[,] { { 10, 5, 2, 1, 0},{ 60000 / 2, 60000, 60000 * 5, 60000 * 10, 0 } }
-			},
-			new ClassObj
-			{
-				ClassId=1,
-				//5m break before last TODO
-				ClassTextBox="2.60min(30sx10|1mx5|5mx2|10mx1|30mx1)",
-				ClassTimes=new int[,]{ { 10, 5, 2, 1, 1, 0},{ 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 60 / 2, 0 } }
-			},
-			new ClassObj
-			{
-				ClassId=2,
-				//14m break before last TODO
-				ClassTextBox="3.2hours(30sx6|1mx3|5mx2|10mx2|20mx1|1.04hx1)",
-				ClassTimes=new int[,]{ { 6, 3, 2, 3, 1, 1, 0},{ 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 20, 60000 * 60 + (60000 * 4), 0 } }
-			}
-		};
-
 		private Timer aTimer;
-		private int[,] times;
-		private string[] files;
 
-		private string searchFolder = "";
 		private int nEventsFired = 0;
 		private int count = 0;
 		private int countDown = 0;
-		private int intervalNumber = 0;
-		private bool isClass = false;
 
 		//Still dont know :(
 		private delegate void _Delegate();
 
+		private readonly ViewModel viewModel = new ViewModel();
+
+		private Queue<int> QClassAmountImg { get; set; }
+		private Queue<int> QClassTime { get; set; }
+
 		public MainWindow()
 		{
+			DataContext = viewModel;
+
 			InitializeComponent();
-			
-			//Disabal panels
-			imagePanel.Visibility = Visibility.Collapsed;
+		}
+		void OnClickBtnBackToMain(object sender, RoutedEventArgs e)
+		{
 
-			foreach (ClassObj aClass in _classes)
-			{
-				Debug.WriteLine(aClass.ToString());
-
-				//add Textboxes to ui
-				comboBox1.Items.Add(aClass.ClassTextBox);
-
-				foreach (int i in aClass.ClassTimes)
-				{
-					Debug.WriteLine("{0} ", i);
-				}
-			}
 		}
 
 		void OnClickBtnPause(object sender, RoutedEventArgs e)
 		{
 			//pause
-			if ((bool)aTimer.Enabled)
+			if (aTimer.Enabled)
 			{
+				viewModel.TextPause = "Unpause";
 				aTimer.Enabled = false;
 			}
 			else
 			{
+				viewModel.TextPause = "Pause";
 				aTimer.Enabled = true;
 			}
 		}
@@ -106,18 +60,20 @@ namespace DrawGesture
 		void OnClickBtnSkip(object sender, RoutedEventArgs e)
 		{
 			//skip
-			countDown = intervalNumber;
+			countDown = viewModel.Time;
 
 			//change image
 			mainWindow.Dispatcher.BeginInvoke(
 				DispatcherPriority.Normal,
 				new _Delegate(ChangeImage));
 
-			if (isClass)
+			if (viewModel.ModeClass[1] == true)
 			{
+				countDown = QClassTime.Peek() / 1000;
+
 				nEventsFired++;
 
-				if (nEventsFired == times[0,0])
+				if (nEventsFired == QClassAmountImg.Peek())
 				{
 					UpdateTimer();
 				}
@@ -126,67 +82,35 @@ namespace DrawGesture
 
 		void OnClickBtnFolder(object sender, RoutedEventArgs e)
 		{
-			using var dialog = new System.Windows.Forms.FolderBrowserDialog();
+			using System.Windows.Forms.FolderBrowserDialog dialog = new System.Windows.Forms.FolderBrowserDialog();
 
 			System.Windows.Forms.DialogResult result = dialog.ShowDialog();
 
 			if (result == System.Windows.Forms.DialogResult.OK)
 			{
-				searchFolder = dialog.SelectedPath;
-				var filters = new String[] { "jpg", "jpeg", "png", "gif", "tiff", "bmp", "svg" };
-				
+				//formats!
+				string[] filters = new string[] { "jpg", "jpeg", "png", "gif", "tiff", "bmp", "svg" };
+
+				viewModel.SelectedPath = dialog.SelectedPath;
+
 				//get files
-				files = GetFilesFrom(searchFolder, filters, true);
+				viewModel.Files = GetFilesFrom(viewModel.SelectedPath, filters, true);
 
-				searchFolder += " | Images: " + files.Length;
-
-				mainWindow.Dispatcher.BeginInvoke(
-			   DispatcherPriority.Normal,
-			   new _Delegate(ChangeLabelFolder));
+				viewModel.TextLblFolder = viewModel.SelectedPath + " | Images: " + viewModel.Files.Length;
 			}
 		}
 
 		void OnClickBtnStart(object sender, RoutedEventArgs e)
 		{
-			if ((bool)rClass.IsChecked)
+			if (viewModel.SelectedPath == null) 
 			{
-				//set is Class mode
-				isClass = true;
-
-				//toggle panels
-				mainPanel.Visibility = Visibility.Collapsed;
-				imagePanel.Visibility = Visibility.Visible;
-
-				string _selectedState = comboBox1.SelectedItem.ToString();
-
-				foreach (ClassObj aClass in _classes)
-				{
-					if (_selectedState == aClass.ClassTextBox) 
-					{
-						Debug.WriteLine(_selectedState);
-
-						//change image
-						mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
-
-						//clone 
-						times = (int[,])aClass.ClassTimes.Clone();
-
-						//set countdown
-						countDown = times[1,0] / 1000;
-
-						//set intervalNumber
-						intervalNumber = countDown;
-
-						//set timer
-						SetTimer(1000);
-					}
-				}
+				Debug.WriteLine(viewModel.ModeClass[1]);
+				Debug.WriteLine("PATH NOT SELECTED!!!");
+				return;
 			}
-			else 
-			{
-				//set is Class mode
-				isClass = false;
 
+			if (viewModel.ModeClass[1] == false)
+			{
 				//toggle panels
 				mainPanel.Visibility = Visibility.Collapsed;
 				imagePanel.Visibility = Visibility.Visible;
@@ -195,13 +119,52 @@ namespace DrawGesture
 				mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
 
 				//set countdown
-				countDown = Int32.Parse(tBTime.Text);
-
-				//set intervalNumber
-				intervalNumber = countDown;
+				countDown = viewModel.Time;
 
 				//set timer
 				SetTimer(1000);
+				return;
+			}
+
+			if (viewModel.ModeClass[1] == true)
+			{
+				//toggle panels
+				mainPanel.Visibility = Visibility.Collapsed;
+				imagePanel.Visibility = Visibility.Visible;
+
+				Debug.WriteLine(viewModel.ClassesEntry);
+
+				//change image
+				mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
+
+				//add to queue
+				QClassAmountImg = new Queue<int>(viewModel.ClassesEntry.ClassAmountImg);
+				QClassTime = new Queue<int>(viewModel.ClassesEntry.ClassTime);
+
+				countDown = QClassTime.Peek() / 1000;
+
+				//set timer
+				SetTimer(1000);
+				return;
+			}
+		}
+
+		private void FlipH(int v)
+		{
+			switch (v)
+			{
+				case 2:
+					Random _random = new Random();
+					int _r = _random.Next(0, 2);
+					FlipH(_r);
+					return;
+				case 1:
+					viewModel.ImageScaleX = -1;
+					return;
+				case 0:
+				default:
+					viewModel.ImageScaleX = 1;
+					return;
 			}
 		}
 
@@ -215,13 +178,13 @@ namespace DrawGesture
 
 		private void UpdateTimer()
 		{
-			int[] _indices = new int[] { 0 };
+			QClassAmountImg.Dequeue();
+			QClassTime.Dequeue();
 
-			times = ResizeArray<int>(times, _indices);
+			//reset countDown
+			countDown = QClassTime.Peek() / 1000;
 
-			countDown = times[1,0] / 1000;
-			intervalNumber = times[1, 0] / 1000;
-
+			//reset amount img
 			nEventsFired = 0;
 		}
 
@@ -231,28 +194,29 @@ namespace DrawGesture
 			countDown--;
 
 			//update ui countDown
-			mainWindow.Dispatcher.BeginInvoke(
-				DispatcherPriority.Normal,
-				new _Delegate(ChangeCountDown));
+			TimeSpan _time = TimeSpan.FromSeconds(countDown);
 
-			if (!isClass)
+			//set textCount to hh\:mm\:ss time
+			viewModel.TextCount = _time.ToString(@"hh\:mm\:ss");
+
+			if (viewModel.ModeClass[1] == false)
 			{
-				//check if countDown is 0, yes change image
 				if (countDown == 0)
 				{
 					//reset countDown
-					countDown = intervalNumber;
+					countDown = viewModel.Time;
 
 					//change image
 					mainWindow.Dispatcher.BeginInvoke(
 						DispatcherPriority.Normal,
 						new _Delegate(ChangeImage));
 				}
-
+				return;
 			}
-			else 
+
+			if (viewModel.ModeClass[1] == true)
 			{
-				if (times[0,0] == 0)
+				if (QClassAmountImg.Peek() == 0)
 				{
 					//stop timer
 					aTimer.Enabled = false;
@@ -261,29 +225,31 @@ namespace DrawGesture
 					Debug.Write("DONE!");
 
 					//start all over again
-					mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal,new _Delegate(StartOver));
+					mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(StartOver));
 
 					return;
 				}
 
-				//check if countDown is 0, yes change image
 				if (countDown == 0)
 				{
 					//reset countDown
-					countDown = intervalNumber;
-					
+					countDown = QClassTime.Peek() / 1000;
+
 					//change image
 					mainWindow.Dispatcher.BeginInvoke(
 						DispatcherPriority.Normal,
 						new _Delegate(ChangeImage));
 
+					//count images
 					nEventsFired++;
 
-					if (nEventsFired == times[0,0])
+					if (nEventsFired == QClassAmountImg.Peek())
 					{
 						UpdateTimer();
 					}
 				}
+
+				return;
 			}
 		}
 
@@ -298,42 +264,34 @@ namespace DrawGesture
 			count = 0;
 		}
 
-		private void ChangeLabelFolder()
-		{
-			lblFolder.Content = searchFolder;
-		}
-
 		private void ChangeImage()
 		{
+			FlipH(viewModel.SelectedFlipV);
+
 			Random _random = new Random();
 			
 			//get random image(int) from list of files
-			int _url = _random.Next(0, files.Length);
+			int _url = _random.Next(0, viewModel.Files.Length);
 			
 			BitmapImage bitmap = new BitmapImage();
 			bitmap.BeginInit();
-			bitmap.UriSource = new Uri(files[_url]);
+			bitmap.UriSource = new Uri(viewModel.Files[_url]);
 			bitmap.EndInit();
 			
 			//draw image 
-			imageBox.Source = bitmap;
-			
+			viewModel.ImageS = bitmap;
+
+			//add image to used!
+			viewModel.UsedFiles.Add(viewModel.Files[_url]);
+
 			//set ui textFile to file path
-			textFile.Text = files[_url];
+			viewModel.TextFile = viewModel.Files[_url];
 
 			//count images
 			count++;
 
 			//set ui textCountImage
-			textCountImage.Text = count.ToString();
-		}
-
-		private void ChangeCountDown()
-		{
-			TimeSpan _time = TimeSpan.FromSeconds(countDown);
-
-			//set textCount to hh\:mm\:ss time
-			textCount.Text = _time.ToString(@"hh\:mm\:ss");
+			viewModel.TextCountImage = count.ToString();
 		}
 
 		//
@@ -357,26 +315,5 @@ namespace DrawGesture
 			return filesFound.ToArray();
 		}
 
-		//Delete col in multiArray
-		//https://social.msdn.microsoft.com/Forums/vstudio/en-US/137cbf2d-fbc3-45e0-a6ba-cd9bdc90b304/deleting-columns-from-multidimensional-array
-		private T[,] ResizeArray<T>(T[,] original, int[] columnsToRemove)
-		{
-			var newArray = new T[original.GetLength(0), original.GetLength(1) - columnsToRemove.Length];
-			int minRows = original.GetLength(0);
-			//int minCols = Math.Min(columnsToRemove.Length, original.GetLength(1));
-			for (int i = 0; i < minRows; i++)
-			{
-				int currentColumn = 0;
-				for (int j = 0; j < original.GetLength(1); j++)
-				{
-					if (columnsToRemove.Contains(j) == false)
-					{
-						newArray[i, currentColumn] = original[i, j];
-						currentColumn++;
-					}
-				}
-			}
-			return newArray;
-		}
 	}
 }
