@@ -16,7 +16,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="2*" />
             <RowDefinition Height="2*" />
-            <RowDefinition MinHeight="300" />
+            <RowDefinition MinHeight="400" />
         </Grid.RowDefinitions>
         <Grid x:Name="mainPanel" Margin="5,5,5,5" Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" MinHeight="100" MinWidth="250" Visibility="Visible">
             <Grid.ColumnDefinitions>
@@ -26,6 +26,7 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
@@ -53,14 +54,20 @@
                 IsEditable="true"
                 IsReadOnly="true" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Grid.Column="2" Padding="10,0,0,0"/>
 
-            <Label FontWeight="Bold" Content="Flip horizontal?" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="2"/>
+            <Label FontWeight="Bold" Content="Flip vertical?" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="2"/>
 
             <RadioButton x:Name="FVDefault" GroupName="FlipV" IsChecked="{Binding Path=FlipV[0], Mode=TwoWay}" Content="Default" Grid.Row="2" Grid.ColumnSpan="1" VerticalAlignment="Center"/>
             <RadioButton x:Name="FVFlip" GroupName="FlipV" IsChecked="{Binding Path=FlipV[1], Mode=TwoWay}"  Content="Flip" Grid.Row="2" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="1"/>
             <RadioButton x:Name="FVRandom" GroupName="FlipV" IsChecked="{Binding Path=FlipV[2], Mode=TwoWay}"  Content="Random" Grid.Row="2" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2"/>
+            
+            <Label FontWeight="Bold" Content="Flip horizontal?" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="3"/>
+
+            <RadioButton x:Name="FHDefault" GroupName="FlipH" IsChecked="{Binding Path=FlipH[0], Mode=TwoWay}" Content="Default" Grid.Row="3" Grid.ColumnSpan="1" VerticalAlignment="Center"/>
+            <RadioButton x:Name="FHFlip" GroupName="FlipH" IsChecked="{Binding Path=FlipH[1], Mode=TwoWay}"  Content="Flip" Grid.Row="3" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="1"/>
+            <RadioButton x:Name="FHRandom" GroupName="FlipH" IsChecked="{Binding Path=FlipH[2], Mode=TwoWay}"  Content="Random" Grid.Row="3" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2"/>
 
             <Button x:Name="btnStart" Background="#FFECC7E0" BorderThickness="1" 
-                Click="OnClickBtnStart" MinWidth="103" MinHeight="20" Content="Start" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2">
+                Click="OnClickBtnStart" MinWidth="103" MinHeight="20" Content="Start" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2">
                 <Button.BorderBrush>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="Black"/>
@@ -70,7 +77,7 @@
             </Button>
 
         </Grid>
-        <Grid x:Name="imagePanel" VerticalAlignment="Stretch" Margin="5,5,5,5" HorizontalAlignment="Stretch" Grid.RowSpan="3" Grid.ColumnSpan="3" Visibility="Collapsed">
+        <Grid x:Name="imagePanel" VerticalAlignment="Stretch" Margin="5,5,5,5" HorizontalAlignment="Stretch" Grid.RowSpan="3" Grid.ColumnSpan="3" Visibility="Hidden">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -83,7 +90,7 @@
             <Image x:Name="imageBox" Source="{Binding Path=ImageS}" MinWidth="200" MinHeight="400" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.Row="1" Grid.ColumnSpan="2" RenderTransformOrigin="0.5,0.5">
                 <Image.RenderTransform>
                     <TransformGroup>
-                        <ScaleTransform ScaleX="{Binding Path=ImageScaleX}"/>
+                        <ScaleTransform ScaleX="{Binding Path=ImageScaleX}" ScaleY="{Binding Path=ImageScaleY}"/>
                         <SkewTransform/>
                         <RotateTransform/>
                         <TranslateTransform/>
@@ -127,34 +134,32 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" MinHeight="15" />
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="Auto" MinHeight="15" />
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition Height="100"/>
             </Grid.RowDefinitions>
-            
-            <Button x:Name="btnBackToMain" Click="OnClickBtnBackToMain" Content="Back To Main Screen" Grid.Row="2" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" HorizontalContentAlignment="Center" Grid.Column="0" RenderTransformOrigin="0.5,0.5">
-                <Button.Background>
-                    <SolidColorBrush Color="#FFECC7E0"/>
-                </Button.Background>
-                <Button.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform/>
-                        <SkewTransform/>
-                        <RotateTransform/>
-                        <TranslateTransform X="0"/>
-                    </TransformGroup>
-                </Button.RenderTransform>
+
+            <ListView x:Name="imageItems" Grid.ColumnSpan="3" Grid.RowSpan="2">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Image Source="{Binding}" MaxHeight="200" Margin="5" Cursor="Hand" MouseUp="Image_MouseUp"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ListView >
+
+            <Button x:Name="btnBackToMain" Background="#FFECC7E0" BorderThickness="1" 
+                Click="OnClickBtnBackToMain" MinWidth="103" MinHeight="20" Content="Back To Main Screen" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="1">
                 <Button.BorderBrush>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="Black"/>
-                        <GradientStop Color="#FFDE3030" Offset="1"/>
+                        <GradientStop Color="#FFE23131" Offset="1"/>
                     </LinearGradientBrush>
                 </Button.BorderBrush>
             </Button>
-
-        </Grid>
+            </Grid>
 
     </Grid>
 

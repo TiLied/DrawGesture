@@ -24,11 +24,28 @@ public class ViewModel : ViewModelBase
 		get { return Array.IndexOf(_flipV, true); }
 	}
 
+	private readonly bool[] _flipH = new bool[] { true, false, false };
+	public bool[] FlipH
+	{
+		get { return _flipH; }
+	}
+	public int SelectedFlipH
+	{
+		get { return Array.IndexOf(_flipH, true); }
+	}
+
 	private int _imageScaleX = 1;
 	public int ImageScaleX
 	{
 		get => _imageScaleX;
 		set => SetProperty(ref _imageScaleX, value);
+	}
+
+	private int _imageScaleY = 1;
+	public int ImageScaleY
+	{
+		get => _imageScaleY;
+		set => SetProperty(ref _imageScaleY, value);
 	}
 
 	public string SelectedPath;

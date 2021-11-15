@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Timers;
 using System.Windows.Threading;
 using System.Text.RegularExpressions;
-
+using System.Windows.Controls;
 
 namespace DrawGesture
 {
@@ -39,7 +39,14 @@ namespace DrawGesture
 		}
 		void OnClickBtnBackToMain(object sender, RoutedEventArgs e)
 		{
+			//show panels
+			endPanel.Visibility = Visibility.Collapsed;
+			mainPanel.Visibility = Visibility.Visible;
 
+			//reset count and nEventsFired
+			nEventsFired = 0;
+			count = 0;
+			viewModel.UsedFiles.Clear();
 		}
 
 		void OnClickBtnPause(object sender, RoutedEventArgs e)
@@ -149,6 +156,24 @@ namespace DrawGesture
 			}
 		}
 
+		private void FlipV(int v)
+		{
+			switch (v)
+			{
+				case 2:
+					Random _random = new Random();
+					int _r = _random.Next(0, 2);
+					FlipV(_r);
+					return;
+				case 1:
+					viewModel.ImageScaleX = -1;
+					return;
+				case 0:
+				default:
+					viewModel.ImageScaleX = 1;
+					return;
+			}
+		}
 		private void FlipH(int v)
 		{
 			switch (v)
@@ -159,11 +184,11 @@ namespace DrawGesture
 					FlipH(_r);
 					return;
 				case 1:
-					viewModel.ImageScaleX = -1;
+					viewModel.ImageScaleY = -1;
 					return;
 				case 0:
 				default:
-					viewModel.ImageScaleX = 1;
+					viewModel.ImageScaleY = 1;
 					return;
 			}
 		}
@@ -224,8 +249,8 @@ namespace DrawGesture
 
 					Debug.Write("DONE!");
 
-					//start all over again
-					mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(StartOver));
+					//show end panel/screen
+					mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ShowEndScreen));
 
 					return;
 				}
@@ -253,20 +278,28 @@ namespace DrawGesture
 			}
 		}
 
-		private void StartOver()
+		private void ShowEndScreen()
 		{
-			//show panels
+			//show endpanel
 			imagePanel.Visibility = Visibility.Collapsed;
-			mainPanel.Visibility = Visibility.Visible;
+			endPanel.Visibility = Visibility.Visible;
 
-			//reset count and nEventsFired
-			nEventsFired = 0;
-			count = 0;
+			imageItems.ItemsSource = viewModel.UsedFiles.ToArray();
+		}
+
+		private void Image_MouseUp(object sender, MouseButtonEventArgs e)
+		{
+			Image _s = (Image)sender;
+
+			//https://stackoverflow.com/a/57146975
+			//open default image viewer
+			Process.Start(new ProcessStartInfo(_s.DataContext.ToString()) { UseShellExecute = true });
 		}
 
 		private void ChangeImage()
 		{
-			FlipH(viewModel.SelectedFlipV);
+			FlipV(viewModel.SelectedFlipV);
+			FlipH(viewModel.SelectedFlipH);
 
 			Random _random = new Random();
 			
