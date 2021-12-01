@@ -26,7 +26,7 @@ namespace DrawGesture
 		//Still dont know :(
 		private delegate void _Delegate();
 
-		private readonly ViewModel viewModel = new ViewModel();
+		private readonly ViewModel viewModel = new();
 
 		private Queue<int> QClassAmountImg { get; set; }
 		private Queue<int> QClassTime { get; set; }
@@ -89,7 +89,7 @@ namespace DrawGesture
 
 		void OnClickBtnFolder(object sender, RoutedEventArgs e)
 		{
-			using System.Windows.Forms.FolderBrowserDialog dialog = new System.Windows.Forms.FolderBrowserDialog();
+			using System.Windows.Forms.FolderBrowserDialog dialog = new();
 
 			System.Windows.Forms.DialogResult result = dialog.ShowDialog();
 
@@ -161,7 +161,7 @@ namespace DrawGesture
 			switch (v)
 			{
 				case 2:
-					Random _random = new Random();
+					Random _random = new();
 					int _r = _random.Next(0, 2);
 					FlipV(_r);
 					return;
@@ -179,7 +179,7 @@ namespace DrawGesture
 			switch (v)
 			{
 				case 2:
-					Random _random = new Random();
+					Random _random = new();
 					int _r = _random.Next(0, 2);
 					FlipH(_r);
 					return;
@@ -301,12 +301,12 @@ namespace DrawGesture
 			FlipV(viewModel.SelectedFlipV);
 			FlipH(viewModel.SelectedFlipH);
 
-			Random _random = new Random();
+			Random _random = new();
 			
 			//get random image(int) from list of files
 			int _url = _random.Next(0, viewModel.Files.Length);
 			
-			BitmapImage bitmap = new BitmapImage();
+			BitmapImage bitmap = new();
 			bitmap.BeginInit();
 			bitmap.UriSource = new Uri(viewModel.Files[_url]);
 			bitmap.EndInit();
@@ -331,7 +331,7 @@ namespace DrawGesture
 		//https://stackoverflow.com/a/12721673
 		private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
 		{
-			Regex regex = new Regex("[^0-9]+");
+			Regex regex = new("[^0-9]+");
 			e.Handled = regex.IsMatch(e.Text);
 		}
 
@@ -339,7 +339,7 @@ namespace DrawGesture
 		//https://stackoverflow.com/a/18321162
 		private static String[] GetFilesFrom(String searchFolder, String[] filters, bool isRecursive)
 		{
-			List<String> filesFound = new List<String>();
+			List<String> filesFound = new();
 			var searchOption = isRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 			foreach (var filter in filters)
 			{
