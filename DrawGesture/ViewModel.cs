@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace DrawGesture
 {
@@ -52,7 +53,7 @@ namespace DrawGesture
 
 		public string SelectedPath;
 		public string[] Files;
-		public List<string> UsedFiles = new();
+		public List<BitmapImage> UsedFiles = new();
 
 		private int _time = 30;
 		public int Time
@@ -120,26 +121,28 @@ namespace DrawGesture
 				ClassId=0,
 				ClassTextBox="1.30min(30sx10|1mx5|5mx2|10mx1)",
 				ClassAmountImg = new int[] {10, 5, 2, 1, 0},
-				ClassTime = new int[] { 60000 / 2, 60000, 60000 * 5, 60000 * 10,0 }
-				//ClassTimes= new int[,] { { 10, 5, 2, 1, 0},{ 60000 / 2, 60000, 60000 * 5, 60000 * 10, 0 } }
+				ClassTime = new int[] { 60000 / 2, 60000, 60000 * 5, 60000 * 10, 0 }
 			},
 			new ClassObj
 			{
 				ClassId=1,
-				//5m break before last TODO!
-				ClassTextBox="2.60min(30sx10|1mx5|5mx2|10mx1|30mx1)",
-				ClassAmountImg = new int[] {10, 5, 2, 1, 1, 0},
-				ClassTime = new int[] { 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 60 / 2,0 }
-				//ClassTimes=new int[,]{ { 10, 5, 2, 1, 1, 0},{ 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 60 / 2, 0 } }
+				ClassTextBox="2.60min(30sx10|1mx5|5mx2|10mx1|5mxbreak|25mx1)",
+				ClassAmountImg = new int[] {10, 5, 2, 1, -1, 1, 0},
+				ClassTime = new int[] { 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 5, 1500000, 0 }
 			},
 			new ClassObj
 			{
 				ClassId=2,
-				//14m break before last TODO!
-				ClassTextBox="3.2hours(30sx6|1mx3|5mx2|10mx2|20mx1|1.04hx1)",
-				ClassAmountImg = new int[] {6, 3, 2, 3, 1, 1, 0},
-				ClassTime = new int[] { 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 20, 60000 * 60 + 60000 * 4,0 }
-				//ClassTimes=new int[,]{ { 6, 3, 2, 3, 1, 1, 0},{ 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 20, 60000 * 60 + (60000 * 4), 0 } }
+				ClassTextBox="3.2hours(30sx6|1mx3|5mx2|10mx2|20mx1|14mxbreak|50mx1)",
+				ClassAmountImg = new int[] {6, 3, 2, 2, 1, -1, 1, 0},
+				ClassTime = new int[] { 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 20, 840000, 1500000 * 2, 0 }
+			},
+			new ClassObj
+			{
+				ClassId=3,
+				ClassTextBox="4.3hours(30sx10|1mx5|5mx2|10mx1|20mx1|10mxbreak|30mx2|10mxbreak|50mx1)",
+				ClassAmountImg = new int[] {10, 5, 2, 1, 1, -1, 2, -1, 1, 0},
+				ClassTime = new int[] { 60000 / 2, 60000, 60000 * 5, 60000 * 10, 60000 * 20, 60000 * 10, 60000 * 30, 60000 * 10, 60000 * 50, 0 }
 			}
 		};
 		}

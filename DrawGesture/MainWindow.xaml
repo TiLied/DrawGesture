@@ -3,10 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DrawGesture"
         mc:Ignorable="d"
         Title="Draw Gesture" Height="900" Width="600" Visibility="Visible"
         FontSize="14" Background="#FFE1DCE6">
+    <Window.Resources>
+        <SolidColorBrush x:Key="Test" Color="#FFC291FF"/>
+    </Window.Resources>
     <Grid x:Name="mainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -32,25 +34,38 @@
                 <RowDefinition />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Label x:Name="lblFolder" Content="{Binding Path=TextLblFolder}" MinWidth="100" MinHeight="20" Grid.ColumnSpan="3"/>
-            <Button x:Name="btnFolder" Background="#FFECC7E0" BorderThickness="1" 
-                Click="OnClickBtnFolder" MinWidth="100" MinHeight="20" Content="Choose folder" HorizontalContentAlignment="Center" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-                <Button.BorderBrush>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="Black"/>
-                        <GradientStop Color="#FFDE3030" Offset="1"/>
-                    </LinearGradientBrush>
-                </Button.BorderBrush>
+            <TextBlock x:Name="lblFolder" TextWrapping="WrapWithOverflow" Text="{Binding Path=TextLblFolder}" MinWidth="100" MinHeight="20" Grid.ColumnSpan="3"/>
+            <Button x:Name="btnFolder" BorderThickness="1" 
+                Click="OnClickBtnFolder" MinWidth="100" MinHeight="20" Content="Choose folder" HorizontalContentAlignment="Center" Grid.Column="3" VerticalAlignment="Top" HorizontalAlignment="Stretch" Background="{DynamicResource Test}" Foreground="Black" BorderBrush="{x:Null}">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border x:Name="Border" Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FFD4D0FF" TargetName="Border" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+
+                    </Style>
+                </Button.Style>
             </Button>
             <Label FontWeight="Bold" Content="Mode?" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="1"/>
-            <RadioButton x:Name="rTime" GroupName="Mode" IsChecked="{Binding Path=ModeClass[0]}" Content="Time" Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+            <RadioButton x:Name="rTime" GroupName="Mode" IsChecked="{Binding Path=ModeClass[0]}" Content="Time" Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center" ToolTip="Time: time between images is the same."/>
             <TextBox PreviewTextInput="NumberValidationTextBox" x:Name="tBTime" Text="{Binding Path=Time}" Grid.ColumnSpan="2" Grid.Row="1" VerticalAlignment="Bottom" Padding="10,0,0,0"/>
-            <RadioButton x:Name="rClass" GroupName="Mode" IsChecked="{Binding Path=ModeClass[1]}"  Content="Class" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2"/>
+            <RadioButton x:Name="rClass" GroupName="Mode" IsChecked="{Binding Path=ModeClass[1]}"  Content="Class" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2" ToolTip="Class: Start with small time between images and later extend. Including breaks."/>
             <ComboBox x:Name="comboBox1"
                 ItemsSource="{Binding Path=ClassesEntries}"
                 DisplayMemberPath="ClassTextBox"
                 SelectedValue="{Binding Path=ClassesEntry}"
-                Text="Classes"
+                Text="Choose Class!"
                 IsEditable="true"
                 IsReadOnly="true" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Grid.Column="2" Padding="10,0,0,0"/>
 
@@ -59,21 +74,34 @@
             <RadioButton x:Name="FVDefault" GroupName="FlipV" IsChecked="{Binding Path=FlipV[0], Mode=TwoWay}" Content="Default" Grid.Row="2" Grid.ColumnSpan="1" VerticalAlignment="Center"/>
             <RadioButton x:Name="FVFlip" GroupName="FlipV" IsChecked="{Binding Path=FlipV[1], Mode=TwoWay}"  Content="Flip" Grid.Row="2" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="1"/>
             <RadioButton x:Name="FVRandom" GroupName="FlipV" IsChecked="{Binding Path=FlipV[2], Mode=TwoWay}"  Content="Random" Grid.Row="2" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2"/>
-            
+
             <Label FontWeight="Bold" Content="Flip horizontal?" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="3"/>
 
             <RadioButton x:Name="FHDefault" GroupName="FlipH" IsChecked="{Binding Path=FlipH[0], Mode=TwoWay}" Content="Default" Grid.Row="3" Grid.ColumnSpan="1" VerticalAlignment="Center"/>
             <RadioButton x:Name="FHFlip" GroupName="FlipH" IsChecked="{Binding Path=FlipH[1], Mode=TwoWay}"  Content="Flip" Grid.Row="3" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="1"/>
             <RadioButton x:Name="FHRandom" GroupName="FlipH" IsChecked="{Binding Path=FlipH[2], Mode=TwoWay}"  Content="Random" Grid.Row="3" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Column="2"/>
 
-            <Button x:Name="btnStart" Background="#FFECC7E0" BorderThickness="1" 
-                Click="OnClickBtnStart" MinWidth="103" MinHeight="20" Content="Start" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2">
-                <Button.BorderBrush>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="Black"/>
-                        <GradientStop Color="#FFE23131" Offset="1"/>
-                    </LinearGradientBrush>
-                </Button.BorderBrush>
+            <Button x:Name="btnStart" Background="{DynamicResource Test}" BorderThickness="1" 
+                Click="OnClickBtnStart" MinWidth="103" MinHeight="20" Content="Start" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" BorderBrush="{x:Null}">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border x:Name="Border" Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FFD4D0FF" TargetName="Border" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+
+                    </Style>
+                </Button.Style>
             </Button>
 
         </Grid>
@@ -102,18 +130,47 @@
 
             <TextBlock  x:Name="textCountImage" Text="{Binding Path=TextCountImage}" Panel.ZIndex="5" MinWidth="10" Background="#FFE5E3E8" Grid.Row="2" HorizontalAlignment="Right" Grid.ColumnSpan="2"/>
             <TextBlock  x:Name="textCount" Text="{Binding Path=TextCount}" Panel.ZIndex="5" MinWidth="10" Padding="0,0,0,0" Background="#FFE5E3E8" Grid.ColumnSpan="2" Grid.Row="2" HorizontalAlignment="Left"/>
-            <Button x:Name="btnSkip" Click="OnClickBtnSkip" Content="Skip" Grid.Row="2" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" Background="#FFECC7E0" HorizontalContentAlignment="Center">
-                <Button.BorderBrush>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="Black"/>
-                        <GradientStop Color="#FFDE3030" Offset="1"/>
-                    </LinearGradientBrush>
-                </Button.BorderBrush>
+            <Button x:Name="btnSkip" Click="OnClickBtnSkip" Content="Skip" Grid.Row="2" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" Background="{DynamicResource Test}" HorizontalContentAlignment="Center" BorderBrush="{x:Null}">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border x:Name="Border" Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FFD4D0FF" TargetName="Border" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+
+                    </Style>
+                </Button.Style>
             </Button>
-            <Button x:Name="btnPause" Click="OnClickBtnPause" Content="{Binding Path=TextPause}" Grid.Row="2" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" HorizontalContentAlignment="Center" Grid.Column="1" RenderTransformOrigin="0.5,0.5">
-                <Button.Background>
-                    <SolidColorBrush Color="#FFECC7E0"/>
-                </Button.Background>
+            <Button x:Name="btnPause" Click="OnClickBtnPause" Content="{Binding Path=TextPause}" Grid.Row="2" HorizontalAlignment="Center" MinWidth="100" MinHeight="20" HorizontalContentAlignment="Center" Grid.Column="1" RenderTransformOrigin="0.5,0.5" Background="{DynamicResource Test}" BorderBrush="{x:Null}">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border x:Name="Border" Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FFD4D0FF" TargetName="Border" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+
+                    </Style>
+                </Button.Style>
                 <Button.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -122,12 +179,6 @@
                         <TranslateTransform X="0"/>
                     </TransformGroup>
                 </Button.RenderTransform>
-                <Button.BorderBrush>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="Black"/>
-                        <GradientStop Color="#FFDE3030" Offset="1"/>
-                    </LinearGradientBrush>
-                </Button.BorderBrush>
             </Button>
         </Grid>
         <Grid x:Name="endPanel" VerticalAlignment="Stretch" Margin="5,5,5,5" HorizontalAlignment="Stretch" Grid.RowSpan="3" Grid.ColumnSpan="3" Visibility="Collapsed">
@@ -142,24 +193,56 @@
                 <RowDefinition Height="100"/>
             </Grid.RowDefinitions>
 
-            <ListView x:Name="imageItems" Grid.ColumnSpan="3" Grid.RowSpan="2">
-                <ItemsControl.ItemTemplate>
+            <ListView x:Name="imageItems" Grid.ColumnSpan="3" Grid.RowSpan="2" HorizontalContentAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="2" HorizontalAlignment="Stretch"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Image Source="{Binding}" MaxHeight="200" Margin="5" Cursor="Hand" MouseUp="Image_MouseUp"/>
+                        <Image Source="{Binding}" ToolTip="{Binding}" MaxHeight="200" Margin="5" Cursor="Hand" MouseUp="Image_MouseUp" RenderOptions.BitmapScalingMode="Linear"/>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
+                </ListView.ItemTemplate>
             </ListView >
 
-            <Button x:Name="btnBackToMain" Background="#FFECC7E0" BorderThickness="1" 
-                Click="OnClickBtnBackToMain" MinWidth="103" MinHeight="20" Content="Back To Main Screen" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="1">
-                <Button.BorderBrush>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="Black"/>
-                        <GradientStop Color="#FFE23131" Offset="1"/>
-                    </LinearGradientBrush>
-                </Button.BorderBrush>
+            <Button x:Name="btnBackToMain" Background="{DynamicResource Test}" BorderThickness="1" 
+                Click="OnClickBtnBackToMain" MinWidth="103" MinHeight="20" Content="Back To Main Screen" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="1" BorderBrush="{x:Null}">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border x:Name="Border" Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FFD4D0FF" TargetName="Border" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+
+                    </Style>
+                </Button.Style>
             </Button>
-            </Grid>
+        </Grid>
+        <Grid x:Name="breakPanel" VerticalAlignment="Stretch" Margin="5,5,5,5" HorizontalAlignment="Stretch" Grid.RowSpan="3" Grid.ColumnSpan="3" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition Height="100"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="1" Grid.Row="2" TextWrapping="Wrap" Text="Break Time!" HorizontalAlignment="Center" FontSize="36" FontWeight="Bold"/>
+
+        </Grid>
 
     </Grid>
 

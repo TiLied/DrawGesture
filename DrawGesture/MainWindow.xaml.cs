@@ -20,7 +20,6 @@ namespace DrawGesture
 		private Timer aTimer;
 
 		private int nEventsFired = 0;
-		private int count = 0;
 		private int countDown = 0;
 
 		//Still dont know :(
@@ -37,6 +36,7 @@ namespace DrawGesture
 
 			InitializeComponent();
 		}
+
 		void OnClickBtnBackToMain(object sender, RoutedEventArgs e)
 		{
 			//show panels
@@ -45,8 +45,8 @@ namespace DrawGesture
 
 			//reset count and nEventsFired
 			nEventsFired = 0;
-			count = 0;
 			viewModel.UsedFiles.Clear();
+			
 		}
 
 		void OnClickBtnPause(object sender, RoutedEventArgs e)
@@ -67,23 +67,29 @@ namespace DrawGesture
 		void OnClickBtnSkip(object sender, RoutedEventArgs e)
 		{
 			//skip
-			countDown = viewModel.Time;
-
-			//change image
-			mainWindow.Dispatcher.BeginInvoke(
-				DispatcherPriority.Normal,
-				new _Delegate(ChangeImage));
-
 			if (viewModel.ModeClass[1] == true)
 			{
 				countDown = QClassTime.Peek() / 1000;
 
 				nEventsFired++;
 
-				if (nEventsFired == QClassAmountImg.Peek())
+				int _peek = QClassAmountImg.Peek();
+
+				if (nEventsFired == _peek || _peek == -1)
 				{
 					UpdateTimer();
+					return;
 				}
+
+				//change image
+				ChangeImage();
+			}
+			else
+			{
+				countDown = viewModel.Time;
+
+				//change image
+				ChangeImage();
 			}
 		}
 
@@ -116,44 +122,36 @@ namespace DrawGesture
 				return;
 			}
 
+			//toggle panels
+			mainPanel.Visibility = Visibility.Collapsed;
+			imagePanel.Visibility = Visibility.Visible;
+
+			//change image
+			ChangeImage();
+
 			if (viewModel.ModeClass[1] == false)
 			{
-				//toggle panels
-				mainPanel.Visibility = Visibility.Collapsed;
-				imagePanel.Visibility = Visibility.Visible;
-
-				//change image
-				mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
-
 				//set countdown
 				countDown = viewModel.Time;
-
-				//set timer
-				SetTimer(1000);
-				return;
 			}
 
 			if (viewModel.ModeClass[1] == true)
 			{
-				//toggle panels
-				mainPanel.Visibility = Visibility.Collapsed;
-				imagePanel.Visibility = Visibility.Visible;
+				//count images
+				nEventsFired++;
 
 				Debug.WriteLine(viewModel.ClassesEntry);
-
-				//change image
-				mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
 
 				//add to queue
 				QClassAmountImg = new Queue<int>(viewModel.ClassesEntry.ClassAmountImg);
 				QClassTime = new Queue<int>(viewModel.ClassesEntry.ClassTime);
 
 				countDown = QClassTime.Peek() / 1000;
-
-				//set timer
-				SetTimer(1000);
-				return;
 			}
+
+			//set timer
+			SetTimer(1000);
+			return;
 		}
 
 		private void FlipV(int v)
@@ -211,6 +209,43 @@ namespace DrawGesture
 
 			//reset amount img
 			nEventsFired = 0;
+
+			if (QClassAmountImg.Peek() > 0)
+			{
+				if (breakPanel.IsVisible)
+				{
+					ShowBreakPanel();
+				}
+
+				//change image
+				ChangeImage();
+			}
+			else if (QClassAmountImg.Peek() == -1)
+			{
+				ShowBreakPanel();
+			}
+			else 
+			{
+				//stop timer
+				aTimer.Enabled = false;
+				aTimer.Stop();
+
+				Debug.Write("DONE!");
+
+				//show end panel/screen
+				mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ShowEndScreen));
+
+				return;
+			}
+		}
+
+		private void ShowBreakPanel() 
+		{
+			if (breakPanel.IsVisible)
+			{
+				breakPanel.Visibility = Visibility.Collapsed;
+			}else
+				breakPanel.Visibility = Visibility.Visible;
 		}
 
 		private void OnTimedEvent(Object source, ElapsedEventArgs e)
@@ -232,15 +267,21 @@ namespace DrawGesture
 					countDown = viewModel.Time;
 
 					//change image
-					mainWindow.Dispatcher.BeginInvoke(
-						DispatcherPriority.Normal,
-						new _Delegate(ChangeImage));
+					mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
 				}
 				return;
 			}
 
 			if (viewModel.ModeClass[1] == true)
 			{
+				
+				if (QClassAmountImg.Peek() == -1)
+				{
+					//mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ShowBreakPanel));
+
+					//return;
+				}
+
 				if (QClassAmountImg.Peek() == 0)
 				{
 					//stop timer
@@ -257,13 +298,16 @@ namespace DrawGesture
 
 				if (countDown == 0)
 				{
+					if (breakPanel.IsVisible)
+					{
+						mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ShowBreakPanel));
+					}
+
 					//reset countDown
 					countDown = QClassTime.Peek() / 1000;
 
 					//change image
-					mainWindow.Dispatcher.BeginInvoke(
-						DispatcherPriority.Normal,
-						new _Delegate(ChangeImage));
+					mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
 
 					//count images
 					nEventsFired++;
@@ -285,6 +329,7 @@ namespace DrawGesture
 			endPanel.Visibility = Visibility.Visible;
 
 			imageItems.ItemsSource = viewModel.UsedFiles.ToArray();
+			
 		}
 
 		private void Image_MouseUp(object sender, MouseButtonEventArgs e)
@@ -315,16 +360,13 @@ namespace DrawGesture
 			viewModel.ImageS = bitmap;
 
 			//add image to used!
-			viewModel.UsedFiles.Add(viewModel.Files[_url]);
+			viewModel.UsedFiles.Add(bitmap);
 
 			//set ui textFile to file path
 			viewModel.TextFile = viewModel.Files[_url];
 
-			//count images
-			count++;
-
 			//set ui textCountImage
-			viewModel.TextCountImage = count.ToString();
+			viewModel.TextCountImage = viewModel.UsedFiles.Count.ToString();
 		}
 
 		//
