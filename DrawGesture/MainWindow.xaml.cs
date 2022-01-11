@@ -138,7 +138,7 @@ namespace DrawGesture
 			if (viewModel.ModeClass[1] == true)
 			{
 				//count images
-				nEventsFired++;
+				//nEventsFired++;
 
 				Debug.WriteLine(viewModel.ClassesEntry);
 
@@ -224,7 +224,7 @@ namespace DrawGesture
 			{
 				ShowBreakPanel();
 			}
-			else 
+			else if (QClassAmountImg.Peek() == 0)
 			{
 				//stop timer
 				aTimer.Enabled = false;
@@ -274,14 +274,6 @@ namespace DrawGesture
 
 			if (viewModel.ModeClass[1] == true)
 			{
-				
-				if (QClassAmountImg.Peek() == -1)
-				{
-					//mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ShowBreakPanel));
-
-					//return;
-				}
-
 				if (QClassAmountImg.Peek() == 0)
 				{
 					//stop timer
