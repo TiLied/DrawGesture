@@ -6,9 +6,9 @@
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release;asd</Configurations>
     <Platforms>AnyCPU;x64</Platforms>
-    <AssemblyVersion>1.6.1.0</AssemblyVersion>
-    <FileVersion>1.6.1.0</FileVersion>
-    <Version>1.6.1</Version>
+    <AssemblyVersion>1.6.2.0</AssemblyVersion>
+    <FileVersion>1.6.2.0</FileVersion>
+    <Version>1.6.2</Version>
     <Description>Choose folder and draw gesture!</Description>
     <Authors>TiLied</Authors>
     <Company />

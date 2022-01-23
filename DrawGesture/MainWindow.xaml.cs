@@ -19,7 +19,7 @@ namespace DrawGesture
 	{
 		private Timer aTimer;
 
-		private int nEventsFired = 0;
+		private int stageCount = 0;
 		private int countDown = 0;
 
 		//Still dont know :(
@@ -44,9 +44,8 @@ namespace DrawGesture
 			mainPanel.Visibility = Visibility.Visible;
 
 			//reset count and nEventsFired
-			nEventsFired = 0;
+			stageCount = 0;
 			viewModel.UsedFiles.Clear();
-			
 		}
 
 		void OnClickBtnPause(object sender, RoutedEventArgs e)
@@ -71,11 +70,11 @@ namespace DrawGesture
 			{
 				countDown = QClassTime.Peek() / 1000;
 
-				nEventsFired++;
+				stageCount++;
 
 				int _peek = QClassAmountImg.Peek();
 
-				if (nEventsFired == _peek || _peek == -1)
+				if (stageCount == _peek || _peek == -1)
 				{
 					UpdateTimer();
 					return;
@@ -126,9 +125,6 @@ namespace DrawGesture
 			mainPanel.Visibility = Visibility.Collapsed;
 			imagePanel.Visibility = Visibility.Visible;
 
-			//change image
-			ChangeImage();
-
 			if (viewModel.ModeClass[1] == false)
 			{
 				//set countdown
@@ -137,9 +133,6 @@ namespace DrawGesture
 
 			if (viewModel.ModeClass[1] == true)
 			{
-				//count images
-				//nEventsFired++;
-
 				Debug.WriteLine(viewModel.ClassesEntry);
 
 				//add to queue
@@ -148,6 +141,9 @@ namespace DrawGesture
 
 				countDown = QClassTime.Peek() / 1000;
 			}
+
+			//change image
+			ChangeImage();
 
 			//set timer
 			SetTimer(1000);
@@ -208,21 +204,21 @@ namespace DrawGesture
 			countDown = QClassTime.Peek() / 1000;
 
 			//reset amount img
-			nEventsFired = 0;
+			stageCount = 0;
 
 			if (QClassAmountImg.Peek() > 0)
 			{
 				if (breakPanel.IsVisible)
 				{
-					ShowBreakPanel();
+					mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ShowBreakPanel));
 				}
 
 				//change image
-				ChangeImage();
+				mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
 			}
 			else if (QClassAmountImg.Peek() == -1)
 			{
-				ShowBreakPanel();
+				mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ShowBreakPanel));
 			}
 			else if (QClassAmountImg.Peek() == 0)
 			{
@@ -234,9 +230,8 @@ namespace DrawGesture
 
 				//show end panel/screen
 				mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ShowEndScreen));
-
-				return;
 			}
+			return;
 		}
 
 		private void ShowBreakPanel() 
@@ -269,7 +264,6 @@ namespace DrawGesture
 					//change image
 					mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
 				}
-				return;
 			}
 
 			if (viewModel.ModeClass[1] == true)
@@ -290,28 +284,27 @@ namespace DrawGesture
 
 				if (countDown == 0)
 				{
-					if (breakPanel.IsVisible)
-					{
-						mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ShowBreakPanel));
-					}
-
 					//reset countDown
 					countDown = QClassTime.Peek() / 1000;
 
-					//change image
-					mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
-
 					//count images
-					nEventsFired++;
+					stageCount++;
 
-					if (nEventsFired == QClassAmountImg.Peek())
+					int _peek = QClassAmountImg.Peek();
+
+					if (stageCount == _peek || _peek == -1)
 					{
 						UpdateTimer();
 					}
+					else
+					{
+						//change image
+						mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new _Delegate(ChangeImage));
+					}
 				}
-
-				return;
 			}
+
+			return;
 		}
 
 		private void ShowEndScreen()
